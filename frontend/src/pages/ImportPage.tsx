@@ -6,7 +6,6 @@ import { persistence } from '../lib/persistence';
 import { client } from '../lib/api-client';
 import { useStore } from '../state/useStore';
 import { Users, BookOpen, School, Upload, CheckCircle2 } from 'lucide-react';
-import { Hero } from '../components/Hero';
 
 export const ImportPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -37,7 +36,8 @@ export const ImportPage: React.FC = () => {
       persistence.saveProblem(result.problem);
       alert('✨ นำเข้าข้อมูลสำเร็จ!');
     } catch (e: any) {
-      alert(`❌ Error: ${e.message}`);
+      const errorMessage = e instanceof Error ? e.message : (e?.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับ Server กรุณาตรวจสอบว่า Backend ทำงานอยู่');
+      alert(`❌ ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -55,12 +55,59 @@ export const ImportPage: React.FC = () => {
         fontFamily: 'var(--font-family)'
       }}
     >
-      <Hero
-        title="สวัสดีครับ ยินดีต้อนรับ"
-        subtitle="เริ่มต้นสร้างตารางเรียนอัจฉริยะ เพียงนำเข้าข้อมูลความต้องการของคุณ แล้วปล่อยให้ AI ของเราจัดการส่วนที่เหลือ"
-        ctaText="นำเข้าข้อมูลตอนนี้"
-        onCtaClick={() => document.getElementById('file-upload')?.click()}
-      />
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1.2fr 0.8fr',
+        gap: 'var(--space-8)',
+        alignItems: 'center',
+        padding: 'var(--space-12)',
+        backgroundColor: 'linear-gradient(135deg, #DCF3E3 0%, #FFFFFF 100%)',
+        borderRadius: '40px',
+        border: '1px solid #BBF7D0',
+        marginBottom: 'var(--space-8)'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: '1.1', margin: 0 }}>
+            สวัสดีครับ!<br/>
+            <span style={{ color: 'var(--accent)' }}>จัดตารางเรียน</span><br/>
+            ให้เป็นเรื่องง่าย
+          </h1>
+          <p style={{ fontSize: 'var(--font-size-lg)', color: 'var(--text-muted)', maxWidth: '500px' }}>
+            นำเข้าข้อมูลรายวิชา อาจารย์ และห้องเรียนของคุณ เพื่อให้ AI ช่วยคำนวณตารางที่เหมาะสมที่สุดในไม่กี่วินาที
+          </p>
+          <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
+            <Button onClick={() => document.getElementById('file-upload')?.click()} style={{ height: '56px', padding: '0 var(--space-8)', borderRadius: '16px', fontWeight: 'bold' }}>
+              เริ่มนำเข้าข้อมูลเลย
+            </Button>
+          </div>
+        </div>
+
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+          <div style={{
+            width: '300px', height: '200px', backgroundColor: 'white', borderRadius: '24px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)', transform: 'rotate(6deg) translateY(-20px)',
+            padding: 'var(--space-6)', border: '1px solid #E2E8F0',
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px'
+          }}>
+            {[...Array(9)].map((_, i) => (
+              <div key={i} style={{
+                backgroundColor: i % 3 === 0 ? '#DCF3E3' : i % 2 === 0 ? '#F0FDF4' : '#FFFFFF',
+                borderRadius: '8px', border: '1px solid #E2E8F0', height: '40px'
+              }} />
+            ))}
+            <div style={{ gridColumn: 'span 3', height: '40px', backgroundColor: '#15803D', borderRadius: '8px', marginTop: '10px' }} />
+          </div>
+          <div style={{
+            position: 'absolute', bottom: '20px', right: '40px', width: '120px', height: '80px',
+            backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+            transform: 'rotate(-12deg)', padding: 'var(--space-4)', border: '1px solid #E2E8F0', zIndex: 10
+          }}>
+            <div style={{ height: '8px', width: '60%', backgroundColor: '#DCF3E3', borderRadius: '4px', marginBottom: '8px' }} />
+            <div style={{ height: '8px', width: '80%', backgroundColor: '#F0FDF4', borderRadius: '4px', marginBottom: '8px' }} />
+            <div style={{ height: '8px', width: '40%', backgroundColor: '#E2E8F0', borderRadius: '4px' }} />
+          </div>
+        </div>
+      </div>
 
       <div style={{
         display: 'grid',
