@@ -1,0 +1,275 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { store } from '../state/store';
+import { persistence } from '../lib/persistence';
+import { client } from '../lib/api-client';
+import { useStore } from '../state/useStore';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FileText, Users, BookOpen, School, Upload, CheckCircle2, AlertCircle } from 'lucide-react';
+
+export const ImportPage: React.FC = () => {
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [counts, setCounts] = useState({ courses: 0, teachers: 0, rooms: 0 });
+  const problem = useStore('problem');
+
+  useEffect(() => {
+    if (problem) {
+      setCounts({
+        courses: problem.courses.length,
+        teachers: problem.teachers.length,
+        rooms: problem.rooms.length,
+      });
+    }
+  }, [problem]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) setFile(e.target.files[0]);
+  };
+
+  const handleImport = async () => {
+    if (!file) return;
+    setLoading(true);
+    try {
+      const result = await client.importData(file);
+      store.setState({ problem: result.problem });
+      persistence.saveProblem(result.problem);
+      alert('✨ นำเข้าข้อมูลสำเร็จ!');
+    } catch (e: any) {
+      alert(`❌ Error: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-10)',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: 'var(--space-12)',
+        fontFamily: 'var(--font-family)'
+      }}
+    >
+      {/* HERO SECTION */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1.2fr 0.8fr',
+        gap: 'var(--space-8)',
+        alignItems: 'center',
+        padding: 'var(--space-12)',
+        backgroundColor: 'linear-gradient(135deg, #DCF3E3 0%, #FFFFFF 100%)',
+        borderRadius: '40px',
+        border: '1px solid #BBF7D0',
+        marginBottom: 'var(--space-8)'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: '1.1', margin: 0 }}>
+            สวัสดีครับ!<br/>
+            <span style={{ color: 'var(--accent)' }}>จัดตารางเรียน</span><br/>
+            ให้เป็นเรื่องง่าย
+          </h1>
+          <p style={{ fontSize: 'var(--font-size-lg)', color: 'var(--text-muted)', maxWidth: '500px' }}>
+            นำเข้าข้อมูลรายวิชา อาจารย์ และห้องเรียนของคุณ เพื่อให้ AI ช่วยคำนวณตารางที่เหมาะสมที่สุดในไม่กี่วินาที
+          </p>
+          <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
+            <Button onClick={() => document.getElementById('file-upload')?.click()} style={{ height: '56px', padding: '0 var(--space-8)', borderRadius: '16px', fontWeight: 'bold' }}>
+              เริ่มนำเข้าข้อมูลเลย
+            </Button>
+          </div>
+        </div>
+
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+          <motion.div
+            animate={{ rotate: [6, 8, 6], y: [0, -10, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              width: '300px', height: '200px', backgroundColor: 'white', borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.1)', transform: 'rotate(6deg) translateY(-20px)',
+              padding: 'var(--space-6)', border: '1px solid #E2E8F0',
+              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px'
+            }}>
+            {[...Array(9)].map((_, i) => (
+              <div key={i} style={{
+                backgroundColor: i % 3 === 0 ? '#DCF3E3' : i % 2 === 0 ? '#F0FDF4' : '#FFFFFF',
+                borderRadius: '8px', border: '1px solid #E2E8F0', height: '40px'
+              }} />
+            ))}
+            <div style={{ gridColumn: 'span 3', height: '40px', backgroundColor: '#15803D', borderRadius: '8px', marginTop: '10px' }} />
+          </motion.div>
+          <motion.div
+            animate={{ rotate: [-12, -10, -12], y: [0, 10, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              position: 'absolute', bottom: '20px', right: '40px', width: '120px', height: '80px',
+              backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+              transform: 'rotate(-12deg)', padding: 'var(--space-4)', border: '1px solid #E2E8F0', zIndex: 10
+            }}>
+            <div style={{ height: '8px', width: '60%', backgroundColor: '#DCF3E3', borderRadius: '4px', marginBottom: '8px' }} />
+            <div style={{ height: '8px', width: '80%', backgroundColor: '#F0FDF4', borderRadius: '4px', marginBottom: '8px' }} />
+            <div style={{ height: '8px', width: '40%', backgroundColor: '#E2E8F0', borderRadius: '4px' }} />
+          </motion.div>
+        </div>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '2fr 1fr',
+        gap: 'var(--space-8)',
+        alignItems: 'start'
+      }}>
+        <Card
+          title="อัปโหลดไฟล์ข้อมูล"
+          subtitle="รองรับ .json, .xlsx, .xls, .csv, .pdf"
+          style={{ borderRadius: '32px', padding: 'var(--space-8)', boxShadow: 'none', border: 'none', backgroundColor: 'transparent' }}
+        >
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            style={{
+              border: `3px ${file ? 'solid' : 'dashed'} ${file ? 'var(--accent)' : '#E2E8F0'}`,
+              borderRadius: '32px',
+              padding: 'var(--space-16)',
+              textAlign: 'center' as const,
+              backgroundColor: file ? '#F0FDF4' : '#F8FAFC',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 'var(--space-6)',
+              boxShadow: file ? '0 10px 30px rgba(21, 128, 61, 0.1)' : 'none'
+            }}
+            onClick={() => document.getElementById('file-upload')?.click()}
+          >
+            <div style={{
+              fontSize: 'var(--font-size-4xl)',
+              backgroundColor: 'white',
+              padding: 'var(--space-6)',
+              borderRadius: '24px',
+              boxShadow: '0 10px 15px rgba(0,0,0,0.05)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Upload size={48} color="var(--accent)" />
+            </div>
+            <div>
+              <p style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: 'var(--font-size-xl)' }}>
+                {file ? file.name : 'ลากไฟล์มาวางที่นี่ หรือ คลิกเพื่อเลือกไฟล์'}
+              </p>
+              <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginTop: 'var(--space-2)' }}>
+                รองรับรูปแบบไฟล์ที่หลากหลายเพื่อความสะดวกของคุณ
+              </p>
+            </div>
+            <input id="file-upload" type="file" accept=".json,.xlsx,.xls,.csv,.pdf" onChange={handleFileChange} style={{ display: 'none' }} />
+          </motion.div>
+          <div style={{ marginTop: 'var(--space-8)', display: 'flex', justifyContent: 'center' }}>
+            <Button onClick={handleImport} isLoading={loading} disabled={!file} style={{
+              width: '300px',
+              height: '64px',
+              borderRadius: '20px',
+              fontSize: 'var(--font-size-lg)',
+              fontWeight: '700',
+              boxShadow: '0 10px 20px rgba(21, 128, 61, 0.2)'
+            }}>
+              เริ่มนำเข้าข้อมูล
+            </Button>
+          </div>
+        </Card>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <div style={{
+            padding: 'var(--space-8)',
+            backgroundColor: 'white',
+            borderRadius: '32px',
+            border: '1px solid #E2E8F0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-6)'
+          }}>
+            <h3 style={{ fontSize: 'var(--font-size-md)', fontWeight: '700', color: 'var(--text-primary)', margin: 0 }}>สรุปจำนวนข้อมูล</h3>
+
+            {[
+              { label: 'กลุ่มเรียน', value: counts.groups, icon: <Users size={20} />, color: '#EEF2FF' },
+              { label: 'รายวิชา', value: counts.courses, icon: <BookOpen size={20} />, color: '#F0FDF4' },
+              { label: 'อาจารย์', value: counts.teachers, icon: <Users size={20} />, color: '#FFF7ED' },
+              { label: 'ห้องเรียน', value: counts.rooms, icon: <School size={20} />, color: '#FDF2F8' },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                style={{
+                  padding: 'var(--space-6)',
+                  backgroundColor: item.color,
+                  borderRadius: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-6)',
+                  border: '1px solid rgba(0,0,0,0.03)'
+                }}
+              >
+                <div style={{
+                  fontSize: 'var(--font-size-xl)',
+                  padding: '10px',
+                  backgroundColor: 'white',
+                  borderRadius: '14px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {item.icon}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: '#64748B', fontWeight: '600', textTransform: 'uppercase' }}>{item.label}</span>
+                  <span style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '800', color: 'var(--text-primary)' }}>{item.value}</span>
+                </div>
+              </motion.div>
+            ))}
+
+            <div style={{
+              marginTop: 'var(--space-4)',
+              padding: 'var(--space-6)',
+              backgroundColor: '#F8FAFC',
+              borderRadius: '24px',
+              border: '1px solid #E2E8F0',
+              textAlign: 'center' as const
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+                <CheckCircle2 size={16} color={problem ? 'var(--accent)' : '#94A3B8'} />
+                <span style={{ fontSize: 'var(--font-size-sm)', color: '#64748B', fontWeight: '500' }}>
+                  ความพร้อมของข้อมูล: {problem ? '100%' : '0%'}
+                </span>
+              </div>
+              <div style={{
+                height: '8px',
+                backgroundColor: '#E2E8F0',
+                borderRadius: 'var(--radius-full)',
+                overflow: 'hidden'
+              }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: problem ? '100%' : '0%' }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  style={{
+                    height: '100%',
+                    backgroundColor: 'var(--accent)',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

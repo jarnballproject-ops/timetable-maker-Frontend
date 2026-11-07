@@ -1,0 +1,75 @@
+:root {
+  /* Base Theme - Green Soft Modern */
+  --bg-page: #f3f8f4;
+  --bg-app: linear-gradient(160deg, #ffffff 40%, #e4f4e8 100%);
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --card-dark: #0f2a1e;
+
+  /* Primary Colors */
+  --accent: #15803d;
+  --accent-hover: #166534;
+  --accent-soft: #dcf3e3;
+  --accent-bright: #22c55e;
+  --highlight: #c8f169;
+
+  /* Category Cards */
+  --card-mint: #ddf3ec;
+  --card-sage: #e3eedc;
+  --card-lime: #eef6d4;
+  --card-teal: #d6eeea;
+  --card-moss: #e6e9dc;
+
+  /* Text */
+  --text-primary: #10231a;
+  --text-muted: #6b7f73;
+  --text-on-accent: #ffffff;
+  --text-on-dark: #f2faf4;
+
+  /* Status */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #0ea5e9;
+
+  /* Layout & Design Tokens */
+  --font-family: 'Plus Jakarta Sans', 'Noto Sans Thai Looped', 'Prompt', sans-serif;
+  --radius-card: 24px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-card: 0 6px 24px rgba(21, 128, 61, 0.08);
+  --glass-blur: 14px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
