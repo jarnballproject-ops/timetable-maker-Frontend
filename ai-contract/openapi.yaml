@@ -1,0 +1,109 @@
+openapi: 3.1.0
+info:
+  title: AI Competition Contract
+  version: 0.1.0   # ต้องตรงกับไฟล์ VERSION (ดู README: กฎ version)
+  description: >
+    สัญญากลางระหว่าง Frontend และ Algorithm. ไฟล์นี้คือแหล่งความจริงเดียว.
+    ฟิลด์ที่มี TODO(domain) เป็น placeholder — แทนที่ในประชุมแรกแล้วขึ้น version เป็น 0.2.0
+servers:
+  - url: http://localhost:8000
+paths:
+  /health:
+    get:
+      summary: เช็คว่า Algorithm พร้อม
+      operationId: health
+      responses:
+        "200":
+          description: พร้อมใช้งาน
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+              example: { status: ok, version: 0.1.0 }
+  /v1/process:
+    post:
+      summary: ส่ง input ให้ประมวลผล
+      operationId: process
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProcessRequest" }
+      responses:
+        "200":
+          description: สำเร็จ
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProcessResponse" }
+        "422":
+          description: input ไม่ถูกต้อง (INVALID_INPUT)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "500":
+          description: อัลกอริทึมผิดพลาด (ALGO_ERROR)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "503":
+          description: ยังไม่พร้อม เช่น โมเดลกำลังโหลด (NOT_READY)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+components:
+  schemas:
+    Health:
+      type: object
+      required: [status, version]
+      properties:
+        status: { type: string, enum: [ok] }
+        version: { type: string }
+    ProcessRequest:
+      type: object
+      required: [input]
+      additionalProperties: false      # request เข้มงวด: จับชื่อ field พิมพ์ผิดได้ทันที
+      properties:
+        requestId:
+          type: string
+          description: FE สร้างเอง (uuid) ใช้ไล่ log สองฝั่ง ไม่บังคับ
+        input: { $ref: "#/components/schemas/Input" }
+    Input:
+      type: object
+      required: [payload]
+      additionalProperties: false
+      properties:
+        payload:                       # TODO(domain): แทนที่ด้วย field จริงของโจทย์
+          type: string
+          minLength: 1
+    ProcessResponse:                   # response ไม่ปิด additionalProperties: เพิ่ม field ใหม่ได้โดยไม่พังฝั่ง FE
+      type: object
+      required: [result, meta]
+      properties:
+        requestId: { type: [string, "null"] }
+        result: { $ref: "#/components/schemas/Result" }
+        meta:
+          type: object
+          required: [elapsedMs, algoVersion]
+          properties:
+            elapsedMs: { type: integer, minimum: 0 }
+            algoVersion: { type: string }
+    Result:
+      type: object
+      required: [value, label]
+      properties:
+        value: { type: number }        # TODO(domain)
+        label: { type: string }        # TODO(domain)
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        requestId: { type: [string, "null"] }
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [INVALID_INPUT, ALGO_ERROR, NOT_READY]
+              # หมายเหตุ: TIMEOUT / NETWORK / BAD_RESPONSE เกิดฝั่ง FE เท่านั้น ไม่อยู่ใน contract
+            message: { type: string }
+            field: { type: [string, "null"] }
